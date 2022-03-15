@@ -47,6 +47,7 @@ function MateriScreen(props) {
       newVideos.push({...doc.data(), id: doc.id});
       lastKey = doc.data().uploadedAt;
     });
+    if (newVideos.length === 0) setError('Materi tidak ditemukan');
     setVideos(newVideos);
     setLastKey(lastKey);
     setLoading(false);
@@ -141,9 +142,13 @@ function MateriScreen(props) {
       );
     } else {
       return (
-        <Text style={{textAlign: 'center'}}>
-          Semua materi telah ditampilkan
-        </Text>
+        <>
+          {!error && (
+            <Text style={{textAlign: 'center'}}>
+              Semua materi telah ditampilkan
+            </Text>
+          )}
+        </>
       );
     }
   };
@@ -232,11 +237,7 @@ function MateriScreen(props) {
               colors={[colors.primary]}
             />
           }
-          ListEmptyComponent={
-            <Text style={styles.errorText}>
-              {error || 'Materi tidak ditemukan'}
-            </Text>
-          }
+          ListEmptyComponent={<Text style={styles.errorText}>{error}</Text>}
           ListFooterComponent={listFooter}
           ListFooterComponentStyle={{paddingVertical: 20}}
         />
