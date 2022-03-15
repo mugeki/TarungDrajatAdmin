@@ -10,6 +10,7 @@ import {
 import {
   ActivityIndicator,
   Button,
+  HelperText,
   Snackbar,
   TextInput,
   withTheme,
@@ -19,6 +20,7 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import {createThumbnail} from 'react-native-create-thumbnail';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
+import validateForm from '../utils/utils';
 
 function MateriAddFormScreen(props) {
   const {colors} = props.theme;
@@ -27,10 +29,14 @@ function MateriAddFormScreen(props) {
   const [visible, setVisible] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [error, setError] = useState({
+    title: '',
+    videoFileName: '',
+  });
   const [form, setForm] = useState({
     title: '',
     description: '',
-    category: '',
+    category: 'Latihan Teknik Dasar',
     videoFileName: '',
     videoUrl: '',
     thumbUrl: '',
@@ -152,16 +158,32 @@ function MateriAddFormScreen(props) {
     });
   };
 
+  const onSubmit = () => {
+    const newError = validateForm(form, error);
+    if (newError.videoFileName !== '')
+      newError.videoFileName = 'File video tidak boleh kosong';
+    setError(newError);
+    if (newError.title === '' && newError.videoFileName === '') {
+      post();
+    }
+  };
+
   return (
     <>
       <ScrollView style={styles.container}>
-        <TextInput
-          style={styles.input}
-          label="Judul"
-          mode="outlined"
-          value={form.title}
-          onChangeText={value => changeForm({title: value})}
-        />
+        <View>
+          <TextInput
+            label="Judul"
+            mode="outlined"
+            value={form.title}
+            onChangeText={value => changeForm({title: value})}
+            error={error.title !== ''}
+          />
+          <HelperText type="error" visible={error.title !== ''}>
+            {error.title}
+          </HelperText>
+        </View>
+
         <TextInput
           style={styles.input}
           label="Deskripsi"
@@ -170,6 +192,7 @@ function MateriAddFormScreen(props) {
           value={form.description}
           onChangeText={value => changeForm({description: value})}
         />
+
         <View style={styles.input}>
           <DropDown
             label="Kategori"
@@ -182,6 +205,7 @@ function MateriAddFormScreen(props) {
             list={categoryList}
           />
         </View>
+
         <View style={styles.input}>
           <Text style={[styles.inputLabel, {color: colors.primary}]}>
             Upload Video
@@ -195,8 +219,12 @@ function MateriAddFormScreen(props) {
             onPress={() => selectVideo()}>
             Pilih File
           </Button>
+          <HelperText type="error" visible={error.videoFileName !== ''}>
+            {error.videoFileName}
+          </HelperText>
           <Text>{form.videoFileName}</Text>
         </View>
+
         {!!form.thumbUrl && (
           <Image
             style={styles.img}
@@ -211,10 +239,11 @@ function MateriAddFormScreen(props) {
             dark={true}
             uppercase={false}
             mode="contained"
-            onPress={() => post()}>
+            onPress={() => onSubmit()}>
             Simpan
           </Button>
         )}
+
         {uploading ? (
           <View style={styles.uploadingContainer}>
             <ActivityIndicator animating={uploading} color={colors.primary} />
@@ -250,7 +279,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   input: {
-    marginBottom: 10,
+    marginBottom: 20,
   },
   inputLabel: {
     fontSize: 16,

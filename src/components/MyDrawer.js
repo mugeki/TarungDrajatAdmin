@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
@@ -7,21 +7,24 @@ import {
 } from '@react-navigation/drawer';
 import MateriStack from './MateriStack';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
+import {AuthContext} from './AuthProvider';
 
 const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent(props) {
+  const {logout} = useContext(AuthContext);
   return (
     <DrawerContentScrollView {...props}>
       <DrawerItemList {...props} />
-      <DrawerItem label="Help" onPress={() => alert('Link to help')} />
+      <DrawerItem label="Logout" onPress={() => logout()} />
     </DrawerContentScrollView>
   );
 }
 
 export default function MyDrawer() {
   return (
-    <Drawer.Navigator>
+    <Drawer.Navigator
+      drawerContent={props => <CustomDrawerContent {...props} />}>
       <Drawer.Screen
         name="MateriStack"
         component={MateriStack}

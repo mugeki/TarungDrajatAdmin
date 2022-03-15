@@ -1,12 +1,15 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {DefaultTheme, Provider as PaperProvider} from 'react-native-paper';
 import SplashScreen from 'react-native-splash-screen';
+import auth from '@react-native-firebase/auth';
 
 import {
   NavigationContainer,
   DefaultTheme as NavDefaultTheme,
 } from '@react-navigation/native';
 import MyDrawer from './src/components/MyDrawer';
+import LoginScreen from './src/screens/LoginScreen';
+import {AuthProvider} from './src/components/AuthProvider';
 
 const theme = {
   ...DefaultTheme,
@@ -33,14 +36,33 @@ const navTheme = {
 };
 
 export default function App() {
+  const [initializing, setInitializing] = useState(true);
+  const [user, setUser] = useState();
+
   useEffect(() => {
     SplashScreen.hide();
   }, []);
+
+  function onAuthStateChanged(user) {
+    setUser(user);
+    if (initializing) setInitializing(false);
+  }
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber;
+  }, []);
+
+  if (initializing) return null;
+
   return (
-    <PaperProvider theme={theme}>
-      <NavigationContainer theme={navTheme}>
-        <MyDrawer />
-      </NavigationContainer>
-    </PaperProvider>
+    <AuthProvider>
+      <PaperProvider theme={theme}>
+        <NavigationContainer theme={navTheme}>
+          {!user ? <LoginScreen /> : <MyDrawer />}
+          {/* <LoginScreen /> */}
+        </NavigationContainer>
+      </PaperProvider>
+    </AuthProvider>
   );
 }

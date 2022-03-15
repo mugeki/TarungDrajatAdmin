@@ -1,14 +1,24 @@
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {Button, Snackbar, TextInput, withTheme} from 'react-native-paper';
+import {
+  Button,
+  HelperText,
+  Snackbar,
+  TextInput,
+  withTheme,
+} from 'react-native-paper';
 import DropDown from 'react-native-paper-dropdown';
 import firestore from '@react-native-firebase/firestore';
+import validateForm from '../utils/utils';
 
 function MateriEditFormScreen(props) {
   const {colors} = props.theme;
   const [showDropown, setShowDropdown] = useState(false);
   const [visible, setVisible] = React.useState(false);
   const [message, setMessage] = useState('');
+  const [error, setError] = useState({
+    title: '',
+  });
   const [form, setForm] = useState({
     ...props.route.params,
   });
@@ -46,16 +56,30 @@ function MateriEditFormScreen(props) {
       });
   };
 
+  const onSubmit = () => {
+    const newError = validateForm(form, error);
+    setError(newError);
+    if (newError.title === '') {
+      put();
+    }
+  };
+
   return (
     <>
       <View style={styles.container}>
-        <TextInput
-          style={styles.input}
-          label="Judul"
-          mode="outlined"
-          value={form.title}
-          onChangeText={value => changeForm({title: value})}
-        />
+        <View>
+          <TextInput
+            label="Judul"
+            mode="outlined"
+            value={form.title}
+            onChangeText={value => changeForm({title: value})}
+            error={error.title !== ''}
+          />
+          <HelperText type="error" visible={error.title !== ''}>
+            {error.title}
+          </HelperText>
+        </View>
+
         <TextInput
           style={styles.input}
           label="Deskripsi"
@@ -64,6 +88,7 @@ function MateriEditFormScreen(props) {
           value={form.description}
           onChangeText={value => changeForm({description: value})}
         />
+
         <View style={styles.input}>
           <DropDown
             label="Kategori"
@@ -76,12 +101,13 @@ function MateriEditFormScreen(props) {
             list={categoryList}
           />
         </View>
+
         <Button
           style={[styles.button, {backgroundColor: colors.text}]}
           dark={true}
           uppercase={false}
           mode="contained"
-          onPress={() => put()}>
+          onPress={() => onSubmit()}>
           Simpan
         </Button>
       </View>
@@ -105,7 +131,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   input: {
-    marginBottom: 10,
+    marginBottom: 20,
   },
   inputLabel: {
     fontSize: 16,
