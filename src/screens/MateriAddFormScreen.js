@@ -296,6 +296,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     alignItems: 'center',
     padding: 20,
+    marginBottom: 20,
   },
   uploadingText: {
     textAlign: 'center',
